@@ -1,4 +1,4 @@
-# AI Study Planner (FYP)
+# AI-Powered Study Planner (FYP)
 
 ![Status](https://img.shields.io/badge/status-WIP-orange)
 ![Python](https://img.shields.io/badge/Python-100%25-blue)
