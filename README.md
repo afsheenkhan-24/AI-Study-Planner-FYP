@@ -16,7 +16,7 @@ An AI-powered study planner that generates personalized, day‑by‑day study sc
 
 You can try the app online here:
 
-👉 **[Open the live app] https://ai-study-planner-fyp.streamlit.app **
+👉 **[Open the live app](https://ai-study-planner-fyp.streamlit.app)**
 
 No local setup needed – add your modules, deadlines, and availability in the browser and generate an AI‑powered study plan.
 
@@ -46,13 +46,13 @@ No local setup needed – add your modules, deadlines, and availability in the b
 ## 📁 Project Structure
 
 ```text
-fyp-ai-study-planner/
-├── app.py               # Main Streamlit entrypoint / router
-├── pages/               # Multi-page Streamlit views
-├── utils/               # Helper functions (LLM, DB, scheduling logic)
-├── schema.sql           # Database schema (e.g., StudyPlan table)
-├── requirements.txt     # Python dependencies
-├── .devcontainer/       # Devcontainer configuration
+AI-Study-Planner-FYP/
+├── app.py             # Main Streamlit entrypoint / router
+├── pages/             # Multi-page Streamlit views
+├── utils/             # Helper functions (LLM, DB, scheduling logic)
+├── schema.sql         # Database schema (e.g., StudyPlan table)
+├── requirements.txt   # Python dependencies
+├── .devcontainer/     # Devcontainer configuration
 ├── .gitignore
 ├── LICENSE
 └── README.md
