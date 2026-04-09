@@ -1,5 +1,6 @@
 import streamlit as st
 from utils.supabase_client import supabase
+from datetime import date, datetime, timedelta
 
 
 def get_tasks(student_id: int):
@@ -110,6 +111,49 @@ def main():
                 st.markdown(f"**{t['title']}**")
                 st.caption(t.get("description") or "No description")
                 st.caption(f"Due: {t['deadline']}  •  Priority: {t['priority']}  •  Status: {t['status']}")
+
+    # ---- Automatic reminders ----
+    st.markdown("---")
+    st.subheader("Reminders")
+
+    today = date.today()
+
+    def parse_deadline(d):
+        try:
+            return datetime.fromisoformat(d).date()
+        except Exception:
+            return None
+
+    urgent = []
+    soon = []
+
+    for t in tasks:
+        d = parse_deadline(t.get("deadline"))
+        if not d:
+            continue
+        days_left = (d - today).days
+        if t.get("status") == "Completed":
+            continue
+        if days_left < 0:
+            urgent.append((t, "Overdue"))
+        elif days_left == 0:
+            urgent.append((t, "Due today"))
+        elif 0 < days_left <= 2:
+            urgent.append((t, f"Due in {days_left} day(s)"))
+        elif 3 <= days_left <= 7:
+            soon.append((t, f"Due in {days_left} day(s)"))
+
+    if not urgent and not soon:
+        st.caption("No urgent reminders. You are on track.")
+    else:
+        if urgent:
+            st.markdown("**Urgent**")
+            for t, label in urgent:
+                st.write(f"🔔 {label}: **{t['title']}** (deadline {t['deadline']})")
+        if soon:
+            st.markdown("**Coming up soon**")
+            for t, label in soon:
+                st.write(f"🔔 {label}: **{t['title']}** (deadline {t['deadline']})")
 
 
 if __name__ == "__main__":
