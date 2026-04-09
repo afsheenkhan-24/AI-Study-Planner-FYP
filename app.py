@@ -9,6 +9,7 @@ pg = st.navigation([
     st.Page("pages/planner.py", title="Planner", icon=":material/book:", default=False),
     st.Page("pages/assignment.py", title="Assignments", icon=":material/school:", default=False),
     st.Page("pages/task.py", title="Tasks", icon=":material/assignment:", default=False),
-    st.Page("pages/calendar.py", title="Calendar", icon=":material/calendar_month:", default=False)
+    st.Page("pages/calendar.py", title="Calendar", icon=":material/calendar_month:", default=False),
+    st.Page("pages/profile.py", title="Profile", icon=":material/person:", default=False),
 ])
 pg.run()
