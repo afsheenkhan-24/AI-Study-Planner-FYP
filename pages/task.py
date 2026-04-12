@@ -1,14 +1,20 @@
-# pages/task.py
 import streamlit as st
-from datetime import date
+from datetime import date, datetime
 from utils.supabase_client import supabase
 
 
 st.title("Tasks")
 
 
-# ---------- Data layer ----------
+def format_date(date_str: str) -> str:
+    try:
+        d = datetime.fromisoformat(date_str).date()
+        return d.strftime("%d %b %Y")
+    except Exception:
+        return date_str
 
+
+# ---- Data layer ----
 
 def get_tasks(student_id: int):
     response = (
@@ -39,15 +45,18 @@ def delete_task(student_id: int, task_id: int):
     st.success("Task deleted successfully!")
 
 
-# ---------- Update Task Dialog (status only) ----------
-
+# ---- Update Task Dialog ----
 
 @st.dialog(title="Update Task status")
 def update_task_dialog(task):
     with st.form("update_task_form"):
         st.markdown(f"**{task['title']}**")
         st.caption(task.get("description") or "No description")
-        st.date_input("Due Date", value=date.fromisoformat(task["deadline"]), disabled=True)
+        st.date_input(
+            "Due Date",
+            value=date.fromisoformat(task["deadline"]),
+            disabled=True,
+        )
         st.selectbox(
             "Status",
             options=["To Do", "In Progress", "Completed"],
@@ -70,8 +79,7 @@ def update_task_dialog(task):
             st.rerun()
 
 
-# ---------- Main layout ----------
-
+# ---- Main layout ----
 
 student_id = st.session_state.student_id
 tasks = get_tasks(student_id)
@@ -89,7 +97,7 @@ else:
                 st.caption(f"Estimated time: {t['estimated_time'] or 'N/A'} hours")
             with c2:
                 st.markdown(f"**{t['status']}**")
-                st.caption(f"Due: {t['deadline']}")
+                st.caption(f"Due: {format_date(t['deadline'])}")
                 st.caption(f"Priority: {t['priority']}")
             with c3:
                 if st.button("Edit status", key=f"edit_{t['task_id']}", use_container_width=True):

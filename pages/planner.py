@@ -1,33 +1,44 @@
-# pages/planner.py
 import streamlit as st
+from datetime import datetime
 from utils.supabase_client import supabase
 from utils.ollama_client import generate_study_plan
 
-st.title("Generate Study Plan")
 
-# ---------- Data layer ----------
+st.title("Planner")
 
-def get_task(student_id):
+
+def format_date(date_str: str) -> str:
+    try:
+        d = datetime.fromisoformat(date_str).date()
+        return d.strftime("%d %b %Y")
+    except Exception:
+        return date_str
+
+
+# ---- Data layer ----
+
+def get_tasks(student_id: int):
     response = (
         supabase
         .table("Task")
-        .select("task_id","title", "description", "deadline", "priority","status", "estimated_time")
+        .select("task_id, title, description, deadline, priority, status, estimated_time")
         .eq("student_id", student_id)
         .execute()
     )
-    return response.data
+    return response.data or []
 
-# ---------- Main layout ----------
 
-# Use the same student_id as in app.py
+# ---- Main layout ----
+
 student_id = st.session_state.get("student_id", 1)
+tasks = get_tasks(student_id)
 
-tasks = get_task(student_id)
+if not tasks:
+    st.info("You have no tasks yet. Generate tasks from assignments first.")
+    st.stop()
 
 
-st.markdown("---")
-
-#st.subheader("AI Study Plan")
+st.subheader("AI Study Plan")
 
 days_ahead = st.slider(
     "Plan for how many days?",

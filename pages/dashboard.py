@@ -2,6 +2,15 @@ import streamlit as st
 from datetime import date, datetime, timedelta
 from utils.supabase_client import supabase
 
+
+def format_date(date_str: str) -> str:
+    try:
+        d = datetime.fromisoformat(date_str).date()
+        return d.strftime("%d %b %Y")
+    except Exception:
+        return date_str
+
+
 # ---- Data layer ----
 
 def get_tasks(student_id: int):
@@ -17,11 +26,13 @@ def get_tasks(student_id: int):
     )
     return response.data or []
 
+
 def parse_deadline(d):
     try:
         return datetime.fromisoformat(d).date()
     except Exception:
         return None
+
 
 def get_student_prefs(student_id: int):
     try:
@@ -91,39 +102,11 @@ def main():
     elif completed_tasks >= 10:
         messages.append("Impressive - 10 or more tasks completed. You're staying on top of your workload.")
 
-    if completion_ratio >= 0.75:
-        messages.append("You've finished most of your tasks - consider reviewing or starting ahead on future work.")
-    elif 0.4 <= completion_ratio < 0.75:
-        messages.append("You're making steady progress. A short focused session today could push you closer to your goal.")
-    elif 0 < completion_ratio < 0.4:
-        messages.append("You've taken the first steps. Try completing one more task today to build confidence.")
-
-    if num_overdue > 0:
-        messages.append(
-            "Some tasks are overdue. Pick one overdue task and focus on just that for a short, uninterrupted session."
-        )
-    elif not overdue_tasks and completion_ratio == 0:
-        messages.append("You have upcoming tasks but nothing started yet. Choose one small task and begin with 20-30 minutes.")
-
     if not messages:
         messages.append("You're on track. Remember to take short breaks and look after your wellbeing as you study.")
 
     for msg in messages:
         st.info(msg)
-
-    # ---- Wellbeing panel ----
-    if show_wellbeing:
-        st.markdown("### Wellbeing support")
-        st.info(
-            "Short breaks, sleep, and realistic plans matter as much as study time. "
-            "If you feel overwhelmed, it is okay to slow down and ask for support."
-        )
-        st.markdown(
-            "- University wellbeing services: "
-            "[Kingston Wellbeing](https://www.kingston.ac.uk/student-support/health-and-wellbeing/)\n"
-            "- Talk to your personal tutor or course team if deadlines feel unmanageable.\n"
-            "- Try a 5-10 minute walk or breathing exercise before starting a difficult task."
-        )
 
     # ---- Today and upcoming tasks ----
     st.markdown("---")
@@ -138,7 +121,10 @@ def main():
             with st.container(border=True):
                 st.markdown(f"**{t['title']}**")
                 st.caption(t.get("description") or "No description")
-                st.caption(f"Due: {t['deadline']}  •  Priority: {t['priority']}  •  Status: {t['status']}")
+                st.caption(
+                    f"Due: {format_date(t['deadline'])}  •  "
+                    f"Priority: {t['priority']}  •  Status: {t['status']}"
+                )
 
     # Upcoming next 7 days
     st.markdown("#### Next 7 days")
@@ -155,7 +141,10 @@ def main():
             with st.container(border=True):
                 st.markdown(f"**{t['title']}**")
                 st.caption(t.get("description") or "No description")
-                st.caption(f"Due: {t['deadline']}  •  Priority: {t['priority']}  •  Status: {t['status']}")
+                st.caption(
+                    f"Due: {format_date(t['deadline'])}  •  "
+                    f"Priority: {t['priority']}  •  Status: {t['status']}"
+                )
 
     # Overdue
     st.markdown("#### Overdue")
@@ -166,41 +155,10 @@ def main():
             with st.container(border=True):
                 st.markdown(f"**{t['title']}**")
                 st.caption(t.get("description") or "No description")
-                st.caption(f"Due: {t['deadline']}  •  Priority: {t['priority']}  •  Status: {t['status']}")
-
-    # Reminders
-    st.markdown("#### Reminders")
-
-    urgent = []
-    soon = []
-    for t in tasks:
-        d = parse_deadline(t.get("deadline"))
-        if not d:
-            continue
-        days_left = (d - today).days
-        if t.get("status") == "Completed":
-            continue
-        if days_left < 0:
-            urgent.append((t, "Overdue"))
-        elif days_left == 0:
-            urgent.append((t, "Due today"))
-        elif 0 < days_left <= 2:
-            urgent.append((t, f"Due in {days_left} day(s)"))
-        elif 3 <= days_left <= 7:
-            soon.append((t, f"Due in {days_left} day(s)"))
-
-    if not urgent and not soon:
-        st.caption("No urgent reminders. You are on track.")
-    else:
-        if urgent:
-            st.markdown("**Urgent**")
-            for t, label in urgent:
-                st.write(f"{label}: **{t['title']}** (deadline {t['deadline']})")
-        if soon:
-            st.markdown("**Coming up soon**")
-            for t, label in soon:
-                st.write(f"{label}: **{t['title']}** (deadline {t['deadline']})")
-
+                st.caption(
+                    f"Due: {format_date(t['deadline'])}  •  "
+                    f"Priority: {t['priority']}  •  Status: {t['status']}"
+                )
 
 if __name__ == "__main__":
     main()

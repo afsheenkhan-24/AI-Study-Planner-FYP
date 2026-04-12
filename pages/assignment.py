@@ -1,10 +1,20 @@
 import streamlit as st
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from utils.supabase_client import supabase
+
 
 st.title("Assignments")
 
+def format_date(date_str: str) -> str:
+    try:
+        d = datetime.fromisoformat(date_str).date()
+        return d.strftime("%d %b %Y")
+    except Exception:
+        return date_str
+
+
 # ---- Data layer ----
+
 
 def get_assignments(student_id: int):
     response = (
@@ -88,7 +98,7 @@ def create_tasks_from_assignment(assignment, student_id: int, sessions: int = 5)
     st.success(f"Created {len(tasks_payload)} tasks for this assignment.")
 
 
-# ----Add assignment dialog ----
+# ---- Add assignment dialog ----
 
 @st.dialog("Add new assignment")
 def add_assignment_dialog(student_id: int):
@@ -127,7 +137,7 @@ else:
             with c1:
                 st.markdown(f"**{a['title']}** ({a.get('module') or 'No module'})")
                 st.caption(a.get("description") or "No description")
-                st.caption(f"Deadline: {a['deadline']}")
+                st.caption(f"Deadline: {format_date(a['deadline'])}")
             with c2:
                 if st.button("Auto-create tasks", key=f"gen_tasks_{a['assignment_id']}", use_container_width=True):
                     create_tasks_from_assignment(a, student_id, sessions=5)

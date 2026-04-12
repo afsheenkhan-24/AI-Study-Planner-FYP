@@ -1,14 +1,13 @@
-# pages/profile.py
 import streamlit as st
 from utils.supabase_client import supabase
 
-st.title("Profile & Preferences")
+st.title("Profile Settings")
 
 
 def get_or_create_student(student_id: int):
     resp = (
         supabase.table("Student")
-        .select("student_id, name, study_days, reminder_time_pref, timezone, show_wellbeing")
+        .select("student_id, name, study_days, reminder_time_pref, timezone")
         .eq("student_id", student_id)
         .execute()
     )
@@ -75,10 +74,5 @@ timezone = st.text_input(
     value=student.get("timezone") or "Europe/London",
 )
 
-show_wellbeing = st.checkbox(
-    "Show wellbeing panel on dashboard",
-    value=student.get("show_wellbeing", True),
-)
-
 if st.button("Save profile", type="primary"):
-    update_profile(student_id, name, study_days, reminder_time_pref, timezone, show_wellbeing)
+    update_profile(student_id, name, study_days, reminder_time_pref, timezone)
