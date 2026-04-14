@@ -4,7 +4,6 @@ from datetime import date, timedelta, datetime
 from typing import List, Dict, Any
 from groq import Groq
 
-# Prefer Streamlit secrets, with env var fallback if you want
 GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 MODEL_NAME = "llama-3.3-70b-versatile"
 
