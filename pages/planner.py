@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from utils.supabase_client import supabase
-from utils.hf_client import generate_study_plan
+from utils.llm_client import generate_study_plan
 
 
 st.title("Planner")
