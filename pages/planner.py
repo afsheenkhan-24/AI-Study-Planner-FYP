@@ -2,10 +2,18 @@ import streamlit as st
 from datetime import datetime
 from utils.supabase_client import supabase
 from utils.llm_client import generate_study_plan
+from utils.auth import run_auth
 
+
+run_auth()
+if "student_id" not in st.session_state or st.session_state.student_id is None:
+    st.stop()
+
+student_id: int = st.session_state.student_id
 
 st.title("Planner")
 
+st.markdown("---")
 
 def format_date(date_str: str) -> str:
     try:
@@ -30,13 +38,11 @@ def get_tasks(student_id: int):
 
 # ---- Main layout ----
 
-student_id = st.session_state.get("student_id", 1)
 tasks = get_tasks(student_id)
 
 if not tasks:
     st.info("You have no tasks yet. Generate tasks from assignments first.")
     st.stop()
-
 
 st.subheader("AI Study Plan")
 
