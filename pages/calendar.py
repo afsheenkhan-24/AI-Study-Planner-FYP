@@ -1,9 +1,18 @@
 import streamlit as st
 from datetime import date, datetime
 from utils.supabase_client import supabase
+from utils.auth import run_auth
 
+
+run_auth()
+if "student_id" not in st.session_state or st.session_state.student_id is None:
+    st.stop()
+
+student_id = st.session_state.student_id
 
 st.title("Calendar")
+
+st.markdown("---")
 
 def format_date(date_str: str) -> str:
     try:
@@ -22,7 +31,7 @@ def parse_deadline(d):
 
 # ---- Data layer ----
 
-def get_tasks(student_id: int):
+def get_tasks(student_id: str):
     response = (
         supabase
         .table("Task")
@@ -38,7 +47,6 @@ def get_tasks(student_id: int):
 
 # ---- Main layout ----
 
-student_id = st.session_state.get("student_id", 1)
 tasks = get_tasks(student_id)
 
 if not tasks:
@@ -47,13 +55,11 @@ if not tasks:
 
 today = date.today()
 
-# Date picker
 selected_date = st.date_input(
     "Select a date",
     value=today,
 )
 
-# Tasks on selected date
 tasks_on_selected = []
 for t in tasks:
     d = parse_deadline(t.get("deadline"))
