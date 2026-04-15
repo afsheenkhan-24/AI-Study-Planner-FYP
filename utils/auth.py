@@ -34,9 +34,7 @@ def _get_or_create_student_for_user(user):
         "study_days": ["Mon", "Tue", "Wed", "Thu"],
         "reminder_time_pref": "Evening",
         "timezone": "Europe/London",
-        "show_wellbeing": True,
-        "theme": "Light",
-        "font_size": "Normal",
+        "show_wellbeing": True
     }).execute()
 
     student_row = insert_resp.data[0]
