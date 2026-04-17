@@ -80,7 +80,7 @@ for t in all_tasks:
 if overdue_tasks:
     st.warning(
         f"You have {len(overdue_tasks)} overdue task(s). "
-        "They are not included in the new plan – please review them on the Dashboard."
+        "They are not included in the new plan - please review them on the Dashboard."
     )
 
 if not incomplete_future_tasks:

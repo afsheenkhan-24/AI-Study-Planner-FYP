@@ -41,7 +41,7 @@ def _next_n_study_dates(days_ahead: int, study_days: List[str]) -> List[date]:
 
     dates: List[date] = []
     current = today
-    limit = days_ahead * 7  # safety cap
+    limit = days_ahead * 7  
 
     if not preferred_weekdays:
         # No preference: just consecutive days
@@ -55,7 +55,6 @@ def _next_n_study_dates(days_ahead: int, study_days: List[str]) -> List[date]:
         current = current + timedelta(days=1)
         limit -= 1
 
-    # If we still didn't get enough, fill remaining with consecutive days
     while len(dates) < days_ahead:
         dates.append(current)
         current = current + timedelta(days=1)

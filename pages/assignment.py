@@ -74,7 +74,7 @@ def create_tasks_from_assignment(assignment, student_id: int, sessions: int = 5)
             st.warning("Not enough days between today and the deadline to create sessions.")
             return
 
-    # 1) Compute the dates (rule-based)
+    # 1) Compute the dates 
     step = max(1, total_days // sessions)
     scheduled_dates = []
     current = today
