@@ -11,6 +11,8 @@ student_id: int = st.session_state.student_id
 
 st.title("Profile Settings")
 
+st.markdown("---")
+
 
 def get_or_create_student(student_id: int):
     resp = (

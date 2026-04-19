@@ -13,6 +13,8 @@ student_id: int = st.session_state.student_id
 
 st.title("Planner")
 
+st.markdown("---")
+
 
 def format_date(date_str: str) -> str:
     try:
