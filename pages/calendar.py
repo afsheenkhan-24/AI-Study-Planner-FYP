@@ -58,6 +58,7 @@ today = date.today()
 selected_date = st.date_input(
     "Select a date",
     value=today,
+    format="DD-MM-YYYY",
 )
 
 tasks_on_selected = []

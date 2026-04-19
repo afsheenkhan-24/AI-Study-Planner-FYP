@@ -148,7 +148,7 @@ def add_assignment_dialog(student_id: int):
         title = st.text_input("Title")
         module = st.text_input("Module (optional)")
         description = st.text_area("Description (optional)")
-        deadline = st.date_input("Deadline", value=date.today())
+        deadline = st.date_input("Deadline", value=date.today(), format="DD-MM-YYYY")
 
         c1, c2 = st.columns(2)
         with c1:
@@ -177,7 +177,7 @@ def edit_assignment_dialog(student_id: int, assignment: dict):
             current_deadline = date.fromisoformat(assignment["deadline"])
         except Exception:
             current_deadline = date.today()
-        deadline = st.date_input("Deadline", value=current_deadline)
+        deadline = st.date_input("Deadline", value=current_deadline, format="DD-MM-YYYY",)
 
         c1, c2 = st.columns(2)
         with c1:
