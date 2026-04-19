@@ -164,3 +164,4 @@ def sign_out():
     st.session_state.pop("student_id", None)
     st.session_state.pop("profile", None)
     st.rerun()
+
