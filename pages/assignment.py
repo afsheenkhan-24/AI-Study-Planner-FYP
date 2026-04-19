@@ -47,13 +47,39 @@ def add_assignment(student_id: int, title: str, module: str, description: str, d
     st.success("Assignment added successfully!")
 
 
+def update_assignment(
+    student_id: int,
+    assignment_id: int,
+    title: str,
+    module: str,
+    description: str,
+    deadline: date,
+):
+    supabase.table("Assignment").update({
+        "title": title,
+        "description": description,
+        "module": module,
+        "deadline": deadline.isoformat(),
+    }).eq("student_id", student_id).eq("assignment_id", assignment_id).execute()
+    st.success("Assignment updated successfully!")
+
+
 def delete_assignment(student_id: int, assignment_id: int):
+    # First delete all tasks linked to this assignment 
+    supabase.table("Task") \
+        .delete() \
+        .eq("student_id", student_id) \
+        .eq("assignment_id", assignment_id) \
+        .execute()
+
+    # Then delete the assignment itself
     supabase.table("Assignment") \
         .delete() \
         .eq("student_id", student_id) \
         .eq("assignment_id", assignment_id) \
         .execute()
-    st.success("Assignment deleted.")
+
+    st.success("Assignment and its tasks were deleted.")
 
 
 def create_tasks_from_assignment(assignment, student_id: int, sessions: int = 5):
@@ -74,7 +100,6 @@ def create_tasks_from_assignment(assignment, student_id: int, sessions: int = 5)
             st.warning("Not enough days between today and the deadline to create sessions.")
             return
 
-    # 1) Compute the dates 
     step = max(1, total_days // sessions)
     scheduled_dates = []
     current = today
@@ -87,10 +112,8 @@ def create_tasks_from_assignment(assignment, student_id: int, sessions: int = 5)
     scheduled_dates = sorted(set(scheduled_dates))
     sessions = len(scheduled_dates)
 
-    # 2) Ask LLM for subtask 
     subtasks = generate_subtasks_with_llm(title, description, sessions=sessions)
     if not subtasks or len(subtasks) != sessions:
-        # Fallback to generic labels if LLM fails
         subtasks = [f"Session {i}" for i in range(1, sessions + 1)]
 
     tasks_payload = []
@@ -115,10 +138,10 @@ def create_tasks_from_assignment(assignment, student_id: int, sessions: int = 5)
     st.success(f"Created {len(tasks_payload)} tasks for this assignment.")
 
 
-# ---- Add assignment dialog ----
+# ---- Dialogs ----
 
 @st.dialog("Add new assignment")
-def add_assignment_dialog(student_id: str):
+def add_assignment_dialog(student_id: int):
     with st.form("add_assignment_form"):
         title = st.text_input("Title")
         module = st.text_input("Module (optional)")
@@ -132,15 +155,45 @@ def add_assignment_dialog(student_id: str):
             cancel = st.form_submit_button("Cancel", use_container_width=True)
 
         if submitted:
-            add_assignment(student_id, title, module, description, deadline)
+            if not title:
+                st.error("Title is required.")
+            else:
+                add_assignment(student_id, title, module, description, deadline)
+                st.rerun()
+        if cancel:
             st.rerun()
+
+
+@st.dialog("Edit assignment")
+def edit_assignment_dialog(student_id: int, assignment: dict):
+    with st.form(f"edit_assignment_form_{assignment['assignment_id']}"):
+        title = st.text_input("Title", value=assignment.get("title") or "")
+        module = st.text_input("Module (optional)", value=assignment.get("module") or "")
+        description = st.text_area("Description (optional)", value=assignment.get("description") or "")
+
+        try:
+            current_deadline = date.fromisoformat(assignment["deadline"])
+        except Exception:
+            current_deadline = date.today()
+        deadline = st.date_input("Deadline", value=current_deadline)
+
+        c1, c2 = st.columns(2)
+        with c1:
+            submitted = st.form_submit_button("Save changes", type="primary", use_container_width=True)
+        with c2:
+            cancel = st.form_submit_button("Cancel", use_container_width=True)
+
+        if submitted:
+            if not title:
+                st.error("Title is required.")
+            else:
+                update_assignment(student_id, assignment["assignment_id"], title, module, description, deadline)
+                st.rerun()
         if cancel:
             st.rerun()
 
 
 # ---- Main layout ----
-
-st.markdown("---")
 
 assignments = get_assignments(student_id)
 
@@ -151,14 +204,28 @@ if not assignments:
 else:
     for a in assignments:
         with st.container(border=True):
-            c1, c2 = st.columns([3, 1])
-            with c1:
+            c_title, c_buttons = st.columns([4, 2])
+            with c_title:
                 st.markdown(f"**{a['title']}** ({a.get('module') or 'No module'})")
-                st.caption(a.get("description") or "No description")
                 st.caption(f"Deadline: {format_date(a['deadline'])}")
-            with c2:
-                if st.button("Auto-create tasks", key=f"gen_tasks_{a['assignment_id']}", use_container_width=True):
+            with c_buttons:
+                b1, b2 = st.columns(2)
+                with b1:
+                    if st.button("Edit", key=f"edit_assignment_{a['assignment_id']}", use_container_width=True):
+                        edit_assignment_dialog(student_id, a)
+                with b2:
+                    if st.button("Delete", key=f"delete_assignment_{a['assignment_id']}", use_container_width=True):
+                        delete_assignment(student_id, a["assignment_id"])
+                        st.rerun()
+
+            c_desc, c_auto = st.columns([4, 2])
+            with c_desc:
+                st.caption(a.get("description") or "No description")
+            with c_auto:
+                st.write("") 
+                if st.button(
+                    "Auto-create tasks",
+                    key=f"gen_tasks_{a['assignment_id']}",
+                    use_container_width=True,
+                ):
                     create_tasks_from_assignment(a, student_id, sessions=5)
-                if st.button("Delete", key=f"delete_assignment_{a['assignment_id']}", use_container_width=True):
-                    delete_assignment(student_id, a["assignment_id"])
-                    st.rerun()
